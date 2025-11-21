@@ -9,7 +9,7 @@ export default function Home() {
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 48 }}>
         <Title level={1} style={{ color: '#1890ff' }}>
-          <HeartOutlined /> SADAKA
+          SADAKA
         </Title>
         <Title level={3}>Plateforme de Gestion des Dons</Title>
         <Paragraph style={{ fontSize: 16, color: '#666' }}>

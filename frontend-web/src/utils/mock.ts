@@ -304,6 +304,47 @@ export async function handleMock(config: AxiosRequestConfig) {
     return { status: 200, data: { ok: true } };
   }
   if (url.match(/\/donations\/[^/]+\/interest$/) && method === 'post') {
+    // Simuler l'ajout d'une demande d'intérêt
+    return { status: 200, data: { ok: true, interestId: 'i' + Date.now() } };
+  }
+  
+  // Récupérer les demandes d'intérêt pour une annonce
+  if (url.match(/\/donations\/[^/]+\/interests$/) && method === 'get') {
+    const announcementId = url.match(/\/donations\/([^/]+)\/interests$/)?.[1];
+    // Retourner des demandes d'intérêt mock
+    return { status: 200, data: [
+      {
+        id: 'i1',
+        userId: 'u4',
+        userName: 'Aicha Benali',
+        userEmail: 'aicha@example.com',
+        userPhone: '0612345681',
+        requestedQuantity: 10,
+        requestedAt: new Date().toISOString(),
+        status: 'PENDING'
+      },
+      {
+        id: 'i2',
+        userId: 'u5',
+        userName: 'Hassan Alami',
+        userEmail: 'hassan@example.com',
+        userPhone: '0612345682',
+        requestedQuantity: 5,
+        requestedAt: new Date(Date.now() - 86400000).toISOString(),
+        status: 'PENDING'
+      }
+    ] };
+  }
+  
+  // Assigner une quantité à un demandeur
+  if (url.match(/\/donations\/[^/]+\/assign$/) && method === 'post') {
+    const body = config.data || {};
+    // Simuler l'assignation
+    return { status: 200, data: { ok: true, assignedQuantity: body.quantity } };
+  }
+  
+  // Supprimer une demande d'intérêt
+  if (url.match(/\/interests\/[^/]+$/) && method === 'delete') {
     return { status: 200, data: { ok: true } };
   }
 

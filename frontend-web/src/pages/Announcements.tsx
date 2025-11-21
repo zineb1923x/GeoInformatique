@@ -96,14 +96,26 @@ export default function Announcements() {
           dataSource={data}
           columns={[
             { title: 'Titre', dataIndex: 'title' },
-            { title: 'Catégorie', dataIndex: 'category' },
+            { 
+              title: 'Catégorie', 
+              dataIndex: 'category',
+              render: (v: string) => (
+                v === 'FOOD' ? 'Nourriture' : 
+                v === 'CLOTHES' ? 'Vêtements' :
+                v === 'MEDICINE' ? 'Médicaments' : 'Autres'
+              )
+            },
             { title: 'Quantité', dataIndex: 'quantity' },
             { title: 'Commune', dataIndex: 'commune' },
             { title: 'Date', dataIndex: 'createdAt' },
             {
               title: 'Statut',
               dataIndex: 'status',
-              render: (v) => <Tag>{v}</Tag>
+              render: (v) => (
+                <Tag color={v === 'APPROVED' ? 'green' : v === 'PENDING' ? 'orange' : v === 'DONATED' ? 'blue' : 'default'}>
+                  {v === 'APPROVED' ? 'Approuvé' : v === 'PENDING' ? 'En attente' : v === 'DONATED' ? 'Donné' : v}
+                </Tag>
+              )
             },
             {
               title: 'Actions',
@@ -115,21 +127,72 @@ export default function Announcements() {
         />
       </Card>
 
-      <Drawer open={!!selected} onClose={() => setSelected(null)} title={selected?.title || 'Détails annonce'} width={420}>
+      <Drawer open={!!selected} onClose={() => setSelected(null)} title={selected?.title || 'Détails annonce'} width={500}>
         {selected && (
-          <div style={{ display: 'grid', gap: 8 }}>
-            <div><b>Catégorie:</b> {selected.category}</div>
-            <div><b>Quantité:</b> {selected.quantity}</div>
-            <div><b>Commune:</b> {selected.commune}</div>
-            <div><b>Date:</b> {new Date(selected.createdAt).toLocaleString()}</div>
-            <Button type="primary" onClick={async () => {
-              try {
-                await api.post(`/donations/${selected.id}/interest`);
-                message.success('Demande d’intérêt envoyée');
-              } catch (e: any) {
-                message.error(e?.message || 'Échec');
-              }
-            }}>Je suis intéressé</Button>
+          <div style={{ display: 'grid', gap: 16 }}>
+            <div>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#1890ff' }}>Catégorie:</strong>
+                <Tag color="blue" style={{ marginLeft: 8 }}>
+                  {selected.category === 'FOOD' ? 'Nourriture' : 
+                   selected.category === 'CLOTHES' ? 'Vêtements' :
+                   selected.category === 'MEDICINE' ? 'Médicaments' : 'Autres'}
+                </Tag>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#1890ff' }}>Quantité:</strong> {selected.quantity} {selected.category === 'FOOD' ? 'unités' : selected.category === 'CLOTHES' ? 'articles' : 'pièces'}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#1890ff' }}>Commune:</strong> {selected.commune}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#1890ff' }}>Date de publication:</strong> {new Date(selected.createdAt).toLocaleDateString('fr-FR', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <strong style={{ color: '#1890ff' }}>Statut:</strong>
+                <Tag color={selected.status === 'APPROVED' ? 'green' : selected.status === 'PENDING' ? 'orange' : selected.status === 'DONATED' ? 'blue' : 'default'} style={{ marginLeft: 8 }}>
+                  {selected.status === 'APPROVED' ? 'Approuvé' : 
+                   selected.status === 'PENDING' ? 'En attente' : 
+                   selected.status === 'DONATED' ? 'Donné' : selected.status}
+                </Tag>
+              </div>
+            </div>
+            {(selected as any).description && (
+              <div>
+                <strong style={{ color: '#1890ff', display: 'block', marginBottom: 8 }}>Description:</strong>
+                <p style={{ 
+                  background: '#f5f5f5', 
+                  padding: 12, 
+                  borderRadius: 4,
+                  margin: 0,
+                  lineHeight: 1.6
+                }}>
+                  {(selected as any).description}
+                </p>
+              </div>
+            )}
+            <Button 
+              type="primary" 
+              size="large" 
+              block
+              onClick={async () => {
+                try {
+                  await api.post(`/donations/${selected.id}/interest`);
+                  message.success('Demande d\'intérêt envoyée avec succès !');
+                  setSelected(null);
+                } catch (e: any) {
+                  message.error(e?.message || 'Échec de l\'envoi');
+                }
+              }}
+            >
+              Je suis intéressé(e)
+            </Button>
           </div>
         )}
       </Drawer>

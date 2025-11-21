@@ -21,7 +21,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const useMocks = String(import.meta.env.VITE_USE_MOCKS || '0') === '1';
+    // Utiliser les mocks par défaut pour la démonstration (si backend non disponible)
+    const useMocks = String(import.meta.env.VITE_USE_MOCKS || '1') === '1';
     const isNetwork = !error.response;
     if (useMocks || isNetwork) {
       try {

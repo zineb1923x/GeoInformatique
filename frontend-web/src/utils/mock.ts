@@ -301,6 +301,29 @@ export async function handleMock(config: AxiosRequestConfig) {
   if (url.endsWith('/newsletter/subscribe') && method === 'post') {
     return { status: 200, data: { ok: true } };
   }
+  if (url.endsWith('/newsletter/subscribers') && method === 'get') {
+    return { status: 200, data: [
+      { id: '1', email: 'subscriber1@example.com', subscribedAt: new Date().toISOString() },
+      { id: '2', email: 'subscriber2@example.com', subscribedAt: new Date(Date.now() - 86400000).toISOString() },
+      { id: '3', email: 'subscriber3@example.com', subscribedAt: new Date(Date.now() - 172800000).toISOString() }
+    ] };
+  }
+  if (url.match(/\/newsletter\/subscribers\/[^/]+$/) && method === 'delete') {
+    return { status: 200, data: { ok: true } };
+  }
+
+  // Users management
+  if (url.endsWith('/users') && method === 'get') {
+    return { status: 200, data: [
+      { id: '1', firstName: 'Ahmed', lastName: 'Alaoui', email: 'admin@sadaka.ma', role: 'ADMIN', phone: '0612345678' },
+      { id: '2', firstName: 'Fatima', lastName: 'Benali', email: 'moderator@sadaka.ma', role: 'MODERATOR', phone: '0612345679' },
+      { id: '3', firstName: 'Mohamed', lastName: 'Idrissi', email: 'user@sadaka.ma', role: 'USER', phone: '0612345680' },
+      { id: '4', firstName: 'Aicha', lastName: 'Tazi', email: 'aicha@example.com', role: 'USER', phone: '0612345681' }
+    ] };
+  }
+  if (url.match(/\/users\/[^/]+$/) && method === 'delete') {
+    return { status: 200, data: { ok: true } };
+  }
 
   // Default fallback
   return { status: 200, data: { ok: true } };

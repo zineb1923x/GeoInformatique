@@ -22,11 +22,7 @@ function App() {
         <Route index element={<Home />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="map" element={<MapPage />} />
-        <Route path="dashboard" element={
-          <ProtectedRoute requiredPermission="view_dashboard">
-            <Dashboard />
-          </ProtectedRoute>
-        } />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route
           path="create-announcement"
           element={

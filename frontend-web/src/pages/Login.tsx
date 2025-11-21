@@ -23,18 +23,52 @@ export default function Login() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 420 }}>
-      <Typography.Title level={2}>Connexion</Typography.Title>
+    <div style={{ padding: 24, maxWidth: 420, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: 32 }}>
+        <Typography.Title level={2}>Connexion</Typography.Title>
+        <Typography.Text type="secondary">
+          Connectez-vous pour accéder à votre espace personnel
+        </Typography.Text>
+      </div>
       <Form form={form} layout="vertical" onFinish={onFinish}>
-        <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email', message: 'Email valide requis' }]}>
-          <Input placeholder="Email" />
+        <Form.Item 
+          label="Email" 
+          name="email" 
+          rules={[{ required: true, type: 'email', message: 'Email valide requis' }]}
+        >
+          <Input placeholder="votre@email.com" size="large" />
         </Form.Item>
-        <Form.Item label="Mot de passe" name="password" rules={[{ required: true, message: 'Mot de passe requis' }]}>
-          <Input.Password placeholder="Mot de passe" />
+        <Form.Item 
+          label="Mot de passe" 
+          name="password" 
+          rules={[{ required: true, message: 'Mot de passe requis' }]}
+        >
+          <Input.Password placeholder="Votre mot de passe" size="large" />
         </Form.Item>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <Button type="primary" htmlType="submit" loading={submitting} disabled={submitting}>Se connecter</Button>
-          <Link to="/register">Créer un compte</Link>
+        <Form.Item>
+          <Button 
+            type="primary" 
+            htmlType="submit" 
+            loading={submitting} 
+            disabled={submitting}
+            block
+            size="large"
+          >
+            Se connecter
+          </Button>
+        </Form.Item>
+        <div style={{ textAlign: 'center', marginTop: 16 }}>
+          <Typography.Text>
+            Vous n'avez pas de compte ? <Link to="/register">Créer un compte</Link>
+          </Typography.Text>
+        </div>
+        <div style={{ marginTop: 24, padding: 16, background: '#f5f5f5', borderRadius: 4 }}>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            <strong>Comptes de test :</strong><br />
+            Admin: admin@sadaka.ma<br />
+            Modérateur: moderator@sadaka.ma<br />
+            Utilisateur: user@sadaka.ma
+          </Typography.Text>
         </div>
       </Form>
     </div>

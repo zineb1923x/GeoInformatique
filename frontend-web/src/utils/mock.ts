@@ -198,6 +198,9 @@ const mockUsers = {
   user: { id: 'u3', firstName: 'Mohamed', lastName: 'Idrissi', email: 'user@sadaka.ma', role: 'USER' as const }
 };
 
+// Stockage des annonces créées par chaque utilisateur
+const userDonations: Record<string, any[]> = {};
+
 export async function handleMock(config: AxiosRequestConfig) {
   const url = config.url || '';
   const method = (config.method || 'get').toLowerCase();
@@ -265,7 +268,34 @@ export async function handleMock(config: AxiosRequestConfig) {
     return { status: 200, data: filtered };
   }
   if (url.endsWith('/donations') && method === 'post') {
-    return { status: 200, data: { id: String(sampleDonations.length + 1) } };
+    const body = config.data || {};
+    const newId = String(Date.now());
+    const newDonation = {
+      id: newId,
+      title: body.title || 'Nouvelle annonce',
+      category: body.category || 'OTHER',
+      quantity: body.quantity || 1,
+      commune: body.commune || 'CASABLANCA',
+      description: body.description || '',
+      createdAt: new Date().toISOString(),
+      status: 'PENDING',
+      latitude: body.latitude || 33.5731,
+      longitude: body.longitude || -7.5898,
+      userId: currentUser?.id || 'unknown'
+    };
+    
+    // Ajouter à la liste globale
+    sampleDonations.push(newDonation);
+    
+    // Ajouter à la liste de l'utilisateur
+    if (currentUser?.id) {
+      if (!userDonations[currentUser.id]) {
+        userDonations[currentUser.id] = [];
+      }
+      userDonations[currentUser.id].push(newDonation);
+    }
+    
+    return { status: 200, data: { id: newId } };
   }
   if (url.match(/\/donations\/[^/]+\/approve/) && method === 'post') {
     return { status: 200, data: { ok: true } };
@@ -279,8 +309,12 @@ export async function handleMock(config: AxiosRequestConfig) {
 
   // My donations
   if (url.includes('/me/donations') && method === 'get') {
-    // Retourner quelques annonces créées par l'utilisateur
-    return { status: 200, data: sampleDonations.slice(0, 5).map(d => ({ ...d, status: 'PENDING' })) };
+    // Retourner seulement les annonces créées par l'utilisateur connecté
+    if (currentUser?.id && userDonations[currentUser.id]) {
+      return { status: 200, data: userDonations[currentUser.id] };
+    }
+    // Si l'utilisateur n'a pas encore créé d'annonces, retourner un tableau vide
+    return { status: 200, data: [] };
   }
 
   // Roles

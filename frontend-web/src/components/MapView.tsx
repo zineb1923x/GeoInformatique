@@ -18,39 +18,47 @@ const defaultIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-// Icônes personnalisées par catégorie
-const createCategoryIcon = (color: string) => {
+// Icônes personnalisées par catégorie avec symboles appropriés
+const createCategoryIcon = (color: string, emoji: string) => {
   return L.divIcon({
     className: 'custom-marker',
     html: `<div style="
       background-color: ${color};
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
       border: 3px solid white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     ">
       <div style="
         transform: rotate(45deg);
         color: white;
-        font-size: 16px;
-        line-height: 24px;
+        font-size: 20px;
+        line-height: 34px;
         text-align: center;
         font-weight: bold;
-      ">🎁</div>
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+     ">${emoji}</div>
     </div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 30],
-    popupAnchor: [0, -30]
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
   }) as any;
 };
 
 const categoryIcons: Record<string, any> = {
-  FOOD: createCategoryIcon('#ff4d4f'),
-  CLOTHES: createCategoryIcon('#1890ff'),
-  MEDICINE: createCategoryIcon('#52c41a'),
-  OTHER: createCategoryIcon('#faad14')
+  FOOD: createCategoryIcon('#ff4d4f', '🍽️'),      // Nourriture - assiette
+  CLOTHES: createCategoryIcon('#1890ff', '👕'),    // Vêtements - t-shirt
+  MEDICINE: createCategoryIcon('#52c41a', '💊'),   // Médicaments - pilule
+  OTHER: createCategoryIcon('#faad14', '📦')       // Autres - boîte
 };
 
 const categoryLabels: Record<string, string> = {

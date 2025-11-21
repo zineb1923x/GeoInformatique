@@ -194,7 +194,7 @@ export default function MyAnnouncements() {
                 title: 'Catégorie', 
                 dataIndex: 'category',
                 render: (cat: string) => (
-                  <Tag color="blue">{categoryLabels[cat] || cat}</Tag>
+                  <Tag color="green">{categoryLabels[cat] || cat}</Tag>
                 )
               },
               { title: 'Quantité', dataIndex: 'quantity' },
@@ -274,7 +274,7 @@ export default function MyAnnouncements() {
               </Descriptions.Item>
               <Descriptions.Item label="Quantité donnée">{selectedAnnouncement.donatedQuantity || 0}</Descriptions.Item>
               <Descriptions.Item label="Catégorie">
-                <Tag color="blue">{categoryLabels[selectedAnnouncement.category] || selectedAnnouncement.category}</Tag>
+                <Tag color="green">{categoryLabels[selectedAnnouncement.category] || selectedAnnouncement.category}</Tag>
               </Descriptions.Item>
             </Descriptions>
 

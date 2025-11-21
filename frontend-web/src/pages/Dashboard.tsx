@@ -75,7 +75,7 @@ export default function Dashboard() {
               title="Total Annonces" 
               value={totals.total} 
               prefix={<GiftOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: '#52c41a' }}
             />
           </Card>
         </Col>

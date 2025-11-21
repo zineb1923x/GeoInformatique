@@ -25,7 +25,21 @@ export default function Login() {
   return (
     <div style={{ padding: 24, maxWidth: 420, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <Typography.Title level={2}>Connexion</Typography.Title>
+        <div style={{ 
+          width: 100, 
+          height: 100, 
+          margin: '0 auto 24px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 48,
+          boxShadow: '0 4px 12px rgba(82, 196, 26, 0.3)'
+        }}>
+          🎁
+        </div>
+        <Typography.Title level={2} style={{ color: '#52c41a' }}>Connexion</Typography.Title>
         <Typography.Text type="secondary">
           Connectez-vous pour accéder à votre espace personnel
         </Typography.Text>

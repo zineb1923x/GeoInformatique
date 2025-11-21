@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: 48 }}>
-        <Title level={1} style={{ color: '#1890ff' }}>
+        <Title level={1} style={{ color: '#52c41a' }}>
           SADAKA
         </Title>
         <Title level={3}>Plateforme de Gestion des Dons</Title>
@@ -35,7 +35,7 @@ export default function Home() {
               title="Communes Couvertes"
               value={12}
               prefix={<GlobalOutlined />}
-              valueStyle={{ color: '#1890ff' }}
+              valueStyle={{ color: '#52c41a' }}
             />
           </Card>
         </Col>

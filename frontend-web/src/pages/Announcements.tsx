@@ -132,21 +132,21 @@ export default function Announcements() {
           <div style={{ display: 'grid', gap: 16 }}>
             <div>
               <div style={{ marginBottom: 8 }}>
-                <strong style={{ color: '#1890ff' }}>Catégorie:</strong>
-                <Tag color="blue" style={{ marginLeft: 8 }}>
+                <strong style={{ color: '#52c41a' }}>Catégorie:</strong>
+                <Tag color="green" style={{ marginLeft: 8 }}>
                   {selected.category === 'FOOD' ? 'Nourriture' : 
                    selected.category === 'CLOTHES' ? 'Vêtements' :
                    selected.category === 'MEDICINE' ? 'Médicaments' : 'Autres'}
                 </Tag>
               </div>
               <div style={{ marginBottom: 8 }}>
-                <strong style={{ color: '#1890ff' }}>Quantité:</strong> {selected.quantity} {selected.category === 'FOOD' ? 'unités' : selected.category === 'CLOTHES' ? 'articles' : 'pièces'}
+                <strong style={{ color: '#52c41a' }}>Quantité:</strong> {selected.quantity} {selected.category === 'FOOD' ? 'unités' : selected.category === 'CLOTHES' ? 'articles' : 'pièces'}
               </div>
               <div style={{ marginBottom: 8 }}>
-                <strong style={{ color: '#1890ff' }}>Commune:</strong> {selected.commune}
+                <strong style={{ color: '#52c41a' }}>Commune:</strong> {selected.commune}
               </div>
               <div style={{ marginBottom: 8 }}>
-                <strong style={{ color: '#1890ff' }}>Date de publication:</strong> {new Date(selected.createdAt).toLocaleDateString('fr-FR', { 
+                <strong style={{ color: '#52c41a' }}>Date de publication:</strong> {new Date(selected.createdAt).toLocaleDateString('fr-FR', { 
                   year: 'numeric', 
                   month: 'long', 
                   day: 'numeric',
@@ -155,7 +155,7 @@ export default function Announcements() {
                 })}
               </div>
               <div style={{ marginBottom: 8 }}>
-                <strong style={{ color: '#1890ff' }}>Statut:</strong>
+                <strong style={{ color: '#52c41a' }}>Statut:</strong>
                 <Tag color={selected.status === 'APPROVED' ? 'green' : selected.status === 'PENDING' ? 'orange' : selected.status === 'DONATED' ? 'blue' : 'default'} style={{ marginLeft: 8 }}>
                   {selected.status === 'APPROVED' ? 'Approuvé' : 
                    selected.status === 'PENDING' ? 'En attente' : 
@@ -165,7 +165,7 @@ export default function Announcements() {
             </div>
             {(selected as any).description && (
               <div>
-                <strong style={{ color: '#1890ff', display: 'block', marginBottom: 8 }}>Description:</strong>
+                <strong style={{ color: '#52c41a', display: 'block', marginBottom: 8 }}>Description:</strong>
                 <p style={{ 
                   background: '#f5f5f5', 
                   padding: 12, 

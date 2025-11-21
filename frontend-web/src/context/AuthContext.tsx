@@ -59,6 +59,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (email: string, password: string) => {
     const res = await api.post('/auth/login', { email, password });
     setToken(res.data.token);
+    // Récupérer immédiatement les infos utilisateur après connexion
+    try {
+      const userRes = await api.get('/auth/me', { headers: { Authorization: `Bearer ${res.data.token}` } });
+      setUser(userRes.data as AuthUser);
+    } catch (e) {
+      // Si erreur, l'useEffect le gérera
+    }
   }, []);
 
   const register = useCallback(

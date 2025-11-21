@@ -313,7 +313,7 @@ export default function Admin() {
                       title: 'Rôle', 
                       dataIndex: 'role',
                       render: (role: string) => (
-                        <Tag color={role === 'ADMIN' ? 'red' : role === 'MODERATOR' ? 'orange' : 'blue'}>
+                        <Tag color={role === 'ADMIN' ? 'red' : role === 'MODERATOR' ? 'orange' : 'green'}>
                           {role}
                         </Tag>
                       )

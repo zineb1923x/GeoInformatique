@@ -56,7 +56,7 @@ const createCategoryIcon = (color: string, emoji: string) => {
 
 const categoryIcons: Record<string, any> = {
   FOOD: createCategoryIcon('#ff4d4f', '🍽️'),      // Nourriture - assiette
-  CLOTHES: createCategoryIcon('#1890ff', '👕'),    // Vêtements - t-shirt
+  CLOTHES: createCategoryIcon('#52c41a', '👕'),    // Vêtements - t-shirt
   MEDICINE: createCategoryIcon('#52c41a', '💊'),   // Médicaments - pilule
   OTHER: createCategoryIcon('#faad14', '📦')       // Autres - boîte
 };
@@ -185,7 +185,7 @@ export default function MapView({ announcements, loading = false }: MapViewProps
                        announcement.status === 'DONATED' ? 'Donné' : 
                        announcement.status}
                     </Tag>
-                    <Tag color="blue" style={{ marginLeft: 4 }}>
+                    <Tag color="green" style={{ marginLeft: 4 }}>
                       {categoryLabels[announcement.category] || announcement.category}
                     </Tag>
                   </div>

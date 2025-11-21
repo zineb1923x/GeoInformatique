@@ -1,23 +1,67 @@
 import { Button, Card, Form, Input, InputNumber, Select, Upload, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { UploadOutlined, AimOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { api } from '../utils/api';
+import { moroccanCommunes, getCommunesByRegion } from '../data/moroccanCommunes';
 
-const communes = [
-  { label: 'Casablanca', value: 'CASABLANCA', centroid: [33.5731, -7.5898] },
-  { label: 'Rabat', value: 'RABAT', centroid: [34.0209, -6.8416] },
-  { label: 'Fès', value: 'FES', centroid: [34.0333, -5.0000] },
-  { label: 'Marrakech', value: 'MARRAKECH', centroid: [31.6295, -7.9811] }
-];
+// Organiser les communes par région pour le Select groupé
+const communesByRegion = getCommunesByRegion();
+const communeOptions = Object.entries(communesByRegion).map(([region, communes]) => ({
+  label: region,
+  options: communes.map(commune => ({ label: commune.label, value: commune.value }))
+}));
 
 export default function CreateAnnouncement() {
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
 
   const onCommuneChange = (val: string) => {
-    const c = communes.find((x) => x.value === val);
+    const c = moroccanCommunes.find((x) => x.value === val);
     if (c) {
       form.setFieldsValue({ latitude: c.centroid[0], longitude: c.centroid[1] });
+    }
+  };
+  
+  // Fonction pour obtenir la géolocalisation actuelle de l'utilisateur
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      setSubmitting(true);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          // Trouver la commune la plus proche
+          let closestCommune = moroccanCommunes[0];
+          let minDistance = Number.MAX_VALUE;
+          
+          moroccanCommunes.forEach(commune => {
+            const distance = Math.sqrt(
+              Math.pow(commune.centroid[0] - latitude, 2) + 
+              Math.pow(commune.centroid[1] - longitude, 2)
+            );
+            
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestCommune = commune;
+            }
+          });
+          
+          form.setFieldsValue({ 
+            commune: closestCommune.value,
+            latitude: latitude,
+            longitude: longitude
+          });
+          
+          setSubmitting(false);
+        },
+        (error) => {
+          console.error("Erreur de géolocalisation:", error);
+          message.error("Impossible d'obtenir votre position. Veuillez sélectionner manuellement.");
+          setSubmitting(false);
+        }
+      );
+    } else {
+      message.error("La géolocalisation n'est pas prise en charge par votre navigateur.");
     }
   };
 
@@ -83,7 +127,23 @@ export default function CreateAnnouncement() {
             </Upload>
           </Form.Item>
           <Form.Item label="Commune" name="commune" rules={[{ required: true, message: 'Commune requise' }]}>
-            <Select options={communes} onChange={onCommuneChange} />
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Select 
+                style={{ flex: 1 }} 
+                options={communeOptions} 
+                onChange={onCommuneChange} 
+                showSearch
+                filterOption={(input, option) => 
+                  (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+                }
+              />
+              <Button 
+                icon={<AimOutlined />} 
+                onClick={getCurrentLocation} 
+                loading={submitting}
+                title="Utiliser ma position actuelle"
+              />
+            </div>
           </Form.Item>
           <div style={{ display: 'flex', gap: 12 }}>
             <Form.Item label="Latitude" name="latitude" rules={[{ required: true, message: 'Latitude requise' }]}>

@@ -1,6 +1,7 @@
 import { Button, Card, Col, DatePicker, Drawer, Input, Row, Select, Slider, Table, Tag, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { api } from '../utils/api';
+import { getCommunesByRegion } from '../data/moroccanCommunes';
 
 type Announcement = {
   id: string;
@@ -66,12 +67,14 @@ export default function Announcements() {
               placeholder="Commune"
               style={{ width: '100%' }}
               onChange={setCommune}
-              options={[
-                { label: 'Casablanca', value: 'CASABLANCA' },
-                { label: 'Rabat', value: 'RABAT' },
-                { label: 'Fès', value: 'FES' },
-                { label: 'Marrakech', value: 'MARRAKECH' }
-              ]}
+              options={Object.entries(getCommunesByRegion()).map(([region, communes]) => ({
+                label: region,
+                options: communes.map(commune => ({ label: commune.label, value: commune.value }))
+              }))}
+              showSearch
+              filterOption={(input, option) => 
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
             />
           </Col>
           <Col xs={24} md={6}>

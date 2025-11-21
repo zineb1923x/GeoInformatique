@@ -2,6 +2,7 @@ import { Avatar, Dropdown, Layout, Menu } from 'antd';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { HomeOutlined, GlobalOutlined, BarChartOutlined, SettingOutlined, LoginOutlined, UserOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
+import { UserRole } from '../utils/roles';
 
 const { Header, Content, Footer } = Layout;
 
@@ -19,7 +20,7 @@ export default function AppLayout() {
     ...baseItems,
     ...(isAuthenticated ? [{ key: '/my-announcements', icon: <SettingOutlined />, label: <Link to="/my-announcements">Mes annonces</Link> }] : []),
     ...(isAuthenticated ? [{ key: '/create-announcement', icon: <SettingOutlined />, label: <Link to="/create-announcement">Créer</Link> }] : []),
-    ...(user?.role === 'ADMIN' ? [{ key: '/admin', icon: <SettingOutlined />, label: <Link to="/admin">Admin</Link> }] : [])
+    ...(user?.role === UserRole.ADMIN ? [{ key: '/admin', icon: <SettingOutlined />, label: <Link to="/admin">Admin</Link> }] : [])
   ];
   const selectedKey = navItems.find(i => location.pathname === i.key)?.key ?? '/';
 

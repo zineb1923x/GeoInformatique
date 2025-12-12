@@ -1,6 +1,8 @@
 import { Button, Card, Form, Input, Modal, Space, Table, Tabs, Tag, message, Typography } from 'antd';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../utils/api';
+import { exportAllDataAsJSON, importDataFromJSON } from '../utils/mock';
 
 type Role = { id: string; name: string; description?: string };
 type PendingDonation = { 
@@ -33,6 +35,45 @@ export default function Admin() {
   
   const [newsletterSubscribers, setNewsletterSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [newsletterLoading, setNewsletterLoading] = useState(false);
+
+  const handleExportData = () => {
+    try {
+      const data = exportAllDataAsJSON();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sadaka-data-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      message.success('Données exportées avec succès!');
+    } catch (e) {
+      message.error('Erreur lors de l\'export des données');
+    }
+  };
+
+  const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        if (importDataFromJSON(data)) {
+          message.success('Données importées avec succès! Veuillez recharger la page.');
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          message.error('Erreur lors de l\'import des données');
+        }
+      } catch (e) {
+        message.error('Fichier JSON invalide');
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const loadRoles = () => {
     setRolesLoading(true);
@@ -333,6 +374,48 @@ export default function Admin() {
                     }
                   ]}
                 />
+              </Card>
+            )
+          },
+          {
+            key: 'data',
+            label: 'Données JSON',
+            children: (
+              <Card 
+                title="Export/Import des données" 
+                extra={
+                  <Space>
+                    <Button 
+                      type="primary" 
+                      icon={<DownloadOutlined />} 
+                      onClick={handleExportData}
+                    >
+                      Exporter toutes les données
+                    </Button>
+                    <label>
+                      <Button icon={<UploadOutlined />} style={{ cursor: 'pointer' }}>
+                        Importer des données
+                      </Button>
+                      <input
+                        type="file"
+                        accept=".json"
+                        style={{ display: 'none' }}
+                        onChange={handleImportData}
+                      />
+                    </label>
+                  </Space>
+                }
+              >
+                <Typography.Paragraph>
+                  <strong>Export :</strong> Téléchargez toutes les données (utilisateurs, dons, etc.) au format JSON.
+                </Typography.Paragraph>
+                <Typography.Paragraph>
+                  <strong>Import :</strong> Importez des données depuis un fichier JSON (remplace les données actuelles).
+                </Typography.Paragraph>
+                <Typography.Text type="secondary">
+                  Les données sont stockées dans le localStorage du navigateur. 
+                  L'export permet de sauvegarder les données pour les réimporter plus tard ou les partager.
+                </Typography.Text>
               </Card>
             )
           },

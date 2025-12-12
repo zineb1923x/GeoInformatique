@@ -1,8 +1,9 @@
 import { Button, Card, Form, Input, InputNumber, Select, Upload, message } from 'antd';
 import { UploadOutlined, AimOutlined } from '@ant-design/icons';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { api } from '../utils/api';
 import { moroccanCommunes, getCommunesByRegion } from '../data/moroccanCommunes';
+import { useAuth } from '../context/AuthContext';
 
 // Organiser les communes par région pour le Select groupé
 const communesByRegion = getCommunesByRegion();
@@ -14,6 +15,8 @@ const communeOptions = Object.entries(communesByRegion).map(([region, communes])
 export default function CreateAnnouncement() {
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
+  const { user } = useAuth();
+  const defaultDeviceId = useMemo(() => `IME-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, []);
 
   const onCommuneChange = (val: string) => {
     const c = moroccanCommunes.find((x) => x.value === val);
@@ -76,6 +79,9 @@ export default function CreateAnnouncement() {
         commune: values.commune,
         latitude: values.latitude,
         longitude: values.longitude,
+         contactEmail: values.contactEmail,
+         contactPhone: values.contactPhone,
+         deviceId: values.deviceId,
         // placeholder for files; in real API you'd send FormData
         photos: (values.photos?.fileList || []).map((f: any) => ({ name: f.name }))
       };
@@ -121,6 +127,24 @@ export default function CreateAnnouncement() {
           <Form.Item label="Description" name="description">
             <Input.TextArea rows={4} />
           </Form.Item>
+          <Form.Item
+            label="Email de contact"
+            name="contactEmail"
+            initialValue={user?.email}
+            rules={[{ required: true, type: 'email', message: 'Email de contact requis' }]}
+          >
+            <Input placeholder="contact@sadaka.ma" />
+          </Form.Item>
+          <Form.Item
+            label="Téléphone de contact"
+            name="contactPhone"
+            rules={[
+              { required: true, message: 'Téléphone de contact requis' },
+              { pattern: /^[0-9+\s()-]{8,15}$/, message: 'Format de téléphone invalide' }
+            ]}
+          >
+            <Input placeholder="+212 6 12 34 56 78" />
+          </Form.Item>
           <Form.Item label="Photos" name="photos" valuePropName="fileList" getValueFromEvent={(e) => e?.fileList}>
             <Upload beforeUpload={() => false} multiple>
               <Button icon={<UploadOutlined />}>Ajouter des photos</Button>
@@ -153,6 +177,17 @@ export default function CreateAnnouncement() {
               <Input style={{ width: 200 }} />
             </Form.Item>
           </div>
+          <Form.Item
+            label="Identifiant du poste (IME)"
+            name="deviceId"
+            initialValue={defaultDeviceId}
+            rules={[{ required: true, message: 'Identifiant du poste requis' }]}
+          >
+            <Input placeholder="IME-XXXXXX" />
+          </Form.Item>
+          <p style={{ color: '#888', marginTop: -8, marginBottom: 16 }}>
+            Cet identifiant permet de tracer l&apos;appareil ayant déclaré le don (exigence sécurité).
+          </p>
           <Button type="primary" htmlType="submit" loading={submitting} disabled={submitting}>Publier</Button>
         </Form>
       </Card>

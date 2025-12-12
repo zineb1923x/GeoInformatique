@@ -1,11 +1,114 @@
 import type { AxiosRequestConfig } from 'axios';
 
+const DATA_VERSION = 'v3'; // Incrémentez pour forcer un reset propre
+
 function delay(ms: number) {
   return new Promise((res) => setTimeout(res, ms));
 }
 
+// Fonction pour charger les dons depuis localStorage
+function loadDonationsFromStorage(): any[] {
+  try {
+    const stored = localStorage.getItem('sadaka_donations');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Erreur lors du chargement des dons depuis localStorage', e);
+  }
+  return [];
+}
+
+// Fonction pour sauvegarder les dons dans localStorage
+function saveDonationsToStorage(donations: any[]) {
+  try {
+    localStorage.setItem('sadaka_donations', JSON.stringify(donations));
+  } catch (e) {
+    console.error('Erreur lors de la sauvegarde des dons dans localStorage', e);
+  }
+}
+
+// Fonction pour charger les utilisateurs depuis localStorage
+function loadUsersFromStorage(): Record<string, any> {
+  try {
+    const stored = localStorage.getItem('sadaka_users');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Erreur lors du chargement des utilisateurs depuis localStorage', e);
+  }
+  return {};
+}
+
+// Fonction pour sauvegarder les utilisateurs dans localStorage
+function saveUsersToStorage(users: Record<string, any>) {
+  try {
+    localStorage.setItem('sadaka_users', JSON.stringify(users));
+  } catch (e) {
+    console.error('Erreur lors de la sauvegarde des utilisateurs dans localStorage', e);
+  }
+}
+
+// Fonction pour charger les dons par utilisateur depuis localStorage
+function loadUserDonationsFromStorage(): Record<string, any[]> {
+  try {
+    const stored = localStorage.getItem('sadaka_user_donations');
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error('Erreur lors du chargement des dons utilisateurs depuis localStorage', e);
+  }
+  return {};
+}
+
+// Fonction pour sauvegarder les dons par utilisateur dans localStorage
+function saveUserDonationsToStorage(userDonations: Record<string, any[]>) {
+  try {
+    localStorage.setItem('sadaka_user_donations', JSON.stringify(userDonations));
+  } catch (e) {
+    console.error('Erreur lors de la sauvegarde des dons utilisateurs dans localStorage', e);
+  }
+}
+
+// Fonction pour exporter toutes les données en JSON
+export function exportAllDataAsJSON() {
+  const donations = loadDonationsFromStorage();
+  const users = loadUsersFromStorage();
+  const userDonations = loadUserDonationsFromStorage();
+  
+  return {
+    donations,
+    users,
+    userDonations,
+    exportedAt: new Date().toISOString(),
+    version: '1.0'
+  };
+}
+
+// Fonction pour importer des données depuis JSON
+export function importDataFromJSON(data: any) {
+  try {
+    if (data.donations) {
+      saveDonationsToStorage(data.donations);
+    }
+    if (data.users) {
+      saveUsersToStorage(data.users);
+    }
+    if (data.userDonations) {
+      saveUserDonationsToStorage(data.userDonations);
+    }
+    return true;
+  } catch (e) {
+    console.error('Erreur lors de l\'import des données', e);
+    return false;
+  }
+}
+
 // Données de test réalistes pour la démonstration
-const sampleDonations = [
+// Charger les dons sauvegardés ou utiliser les données initiales
+const initialDonations = [
   {
     id: '1',
     title: 'Don de vêtements d\'hiver pour enfants',
@@ -188,18 +291,153 @@ const sampleDonations = [
   }
 ];
 
+// Combiner les dons initiaux avec ceux sauvegardés dans localStorage
+const savedDonations = loadDonationsFromStorage();
+const sampleDonations = savedDonations.length > 0 
+  ? savedDonations 
+  : initialDonations;
+
+// Si on utilise les données initiales, les sauvegarder
+if (savedDonations.length === 0) {
+  saveDonationsToStorage(initialDonations);
+}
+
 let token: string | null = 'mock-token';
 let currentUser: any = null;
 
-// Utilisateurs de test
-const mockUsers = {
-  admin: { id: 'u1', firstName: 'Ahmed', lastName: 'Alaoui', email: 'admin@sadaka.ma', role: 'ADMIN' as const },
-  moderator: { id: 'u2', firstName: 'Fatima', lastName: 'Benali', email: 'moderator@sadaka.ma', role: 'MODERATOR' as const },
-  user: { id: 'u3', firstName: 'Mohamed', lastName: 'Idrissi', email: 'user@sadaka.ma', role: 'USER' as const }
+// Utilisateurs de test initiaux
+const initialMockUsers = {
+  admin: { 
+    id: 'u1', 
+    firstName: 'Ahmed', 
+    lastName: 'Alaoui', 
+    email: 'admin@sadaka.ma', 
+    role: 'ADMIN' as const,
+    phone: '0612345678',
+    password: 'admin123' // Pour référence, pas utilisé en production
+  },
+  moderator: { 
+    id: 'u2', 
+    firstName: 'Fatima', 
+    lastName: 'Benali', 
+    email: 'moderator@sadaka.ma', 
+    role: 'MODERATOR' as const,
+    phone: '0612345679',
+    password: 'mod123'
+  },
+  user: { 
+    id: 'u3', 
+    firstName: 'Mohamed', 
+    lastName: 'Idrissi', 
+    email: 'user@sadaka.ma', 
+    role: 'USER' as const,
+    phone: '0612345680',
+    password: 'user123'
+  }
 };
 
+// Charger les utilisateurs sauvegardés ou utiliser les initiaux
+const savedUsers = loadUsersFromStorage();
+const mockUsers: Record<string, any> = Object.keys(savedUsers).length > 0 
+  ? { ...initialMockUsers, ...savedUsers }
+  : initialMockUsers;
+
+// Sauvegarder les utilisateurs initiaux si pas encore sauvegardés
+const isFirstTime = Object.keys(savedUsers).length === 0;
+if (isFirstTime) {
+  saveUsersToStorage(initialMockUsers);
+}
+
 // Stockage des annonces créées par chaque utilisateur
-const userDonations: Record<string, any[]> = {};
+// Charger depuis localStorage ou initialiser vide
+const savedUserDonations = loadUserDonationsFromStorage();
+const userDonations: Record<string, any[]> = savedUserDonations;
+
+// Fabrique d'annonces démo (compte demo)
+function createDemoDonations() {
+  return [
+    {
+      id: 'demo1',
+      title: 'Don de vêtements d\'hiver pour enfants',
+      category: 'CLOTHES',
+      quantity: 30,
+      commune: 'CASABLANCA',
+      description: 'Vêtements chauds pour enfants de 5 à 12 ans. En très bon état, lavés et repassés.',
+      createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+      status: 'APPROVED',
+      latitude: 33.5731,
+      longitude: -7.5898,
+      userId: 'u4'
+    },
+    {
+      id: 'demo2',
+      title: 'Panier alimentaire complet',
+      category: 'FOOD',
+      quantity: 1,
+      commune: 'RABAT',
+      description: 'Panier contenant riz, pâtes, huile, sucre, thé et conserves. Valable pour une famille de 4 personnes.',
+      createdAt: new Date(Date.now() - 5 * 86400000).toISOString(),
+      status: 'APPROVED',
+      latitude: 34.0209,
+      longitude: -6.8416,
+      userId: 'u4'
+    },
+    {
+      id: 'demo3',
+      title: 'Livres et fournitures scolaires',
+      category: 'OTHER',
+      quantity: 50,
+      commune: 'MARRAKECH',
+      description: 'Livres scolaires, cahiers, stylos et cartables. Idéal pour la rentrée scolaire.',
+      createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+      status: 'PENDING',
+      latitude: 31.6295,
+      longitude: -7.9811,
+      userId: 'u4'
+    }
+  ];
+}
+
+// Réinitialisation forcée : seuls les comptes démo conservent des annonces
+const storedVersion = localStorage.getItem('sadaka_data_version');
+const shouldResetData = storedVersion !== DATA_VERSION;
+if (shouldResetData) {
+  localStorage.setItem('sadaka_data_version', DATA_VERSION);
+
+  // Réinitialiser les annonces globales
+  sampleDonations.length = 0;
+  sampleDonations.push(...initialDonations);
+
+  // Réinitialiser les annonces par utilisateur : uniquement pour le compte demo
+  Object.keys(userDonations).forEach((k) => delete userDonations[k]);
+  const demoDonations = createDemoDonations();
+  userDonations['u4'] = demoDonations;
+
+  // Ajouter les annonces démo dans la liste globale
+  demoDonations.forEach((donation) => {
+    if (!sampleDonations.find((d) => d.id === donation.id)) {
+      sampleDonations.push(donation);
+    }
+  });
+
+  // Sauvegarder
+  saveDonationsToStorage(sampleDonations);
+  saveUserDonationsToStorage(userDonations);
+  saveUsersToStorage(mockUsers);
+} else {
+  // Si pas de reset mais pas d'annonces pour le compte demo, assurer la présence
+  if (!userDonations['u4']) {
+    const demoDonations = createDemoDonations();
+    userDonations['u4'] = demoDonations;
+    demoDonations.forEach((donation) => {
+      if (!sampleDonations.find((d) => d.id === donation.id)) {
+        sampleDonations.push(donation);
+      }
+    });
+    saveUserDonationsToStorage(userDonations);
+    saveDonationsToStorage(sampleDonations);
+  }
+}
 
 export async function handleMock(config: AxiosRequestConfig) {
   const url = config.url || '';
@@ -209,26 +447,66 @@ export async function handleMock(config: AxiosRequestConfig) {
   // Auth
   if (url.endsWith('/auth/login') && method === 'post') {
     const body = config.data || {};
-    // Simuler différents utilisateurs selon l'email
-    if (body.email === 'admin@sadaka.ma') {
-      currentUser = mockUsers.admin;
-    } else if (body.email === 'moderator@sadaka.ma') {
-      currentUser = mockUsers.moderator;
-    } else {
-      currentUser = mockUsers.user;
+    
+    // Chercher l'utilisateur par email dans tous les utilisateurs (initiaux + créés)
+    const foundUser = Object.values(mockUsers).find((u: any) => u.email === body.email);
+    
+    if (foundUser) {
+      // Vérifier le mot de passe (en production, utiliser un hash!)
+      // Pour les comptes de test, on accepte n'importe quel mot de passe
+      // Pour les nouveaux comptes, vérifier le mot de passe stocké
+      if (foundUser.password && body.password !== foundUser.password) {
+        return { status: 401, data: { message: 'Email ou mot de passe incorrect' } };
+      }
+      
+      currentUser = foundUser;
+      token = 'mock-token-' + currentUser.id;
+
+      // S'assurer que chaque utilisateur a sa propre liste d'annonces (sinon initialise vide)
+      if (!userDonations[currentUser.id]) {
+        userDonations[currentUser.id] = [];
+        saveUserDonationsToStorage(userDonations);
+      }
+
+      return { status: 200, data: { token: token } };
     }
-    token = 'mock-token-' + currentUser.id;
-    return { status: 200, data: { token: token } };
+    
+    // Si utilisateur non trouvé
+    return { status: 401, data: { message: 'Email ou mot de passe incorrect' } };
   }
   if (url.endsWith('/auth/register') && method === 'post') {
     const body = config.data || {};
+    
+    // Vérifier si l'email existe déjà
+    const existingUser = Object.values(mockUsers).find((u: any) => u.email === body.email);
+    if (existingUser) {
+      return { status: 400, data: { message: 'Cet email est déjà utilisé' } };
+    }
+    
+    // Créer le nouvel utilisateur
+    const newUserId = 'u' + Date.now();
     currentUser = {
-      id: 'u' + Date.now(),
+      id: newUserId,
       firstName: body.firstName || 'Nouveau',
       lastName: body.lastName || 'Utilisateur',
       email: body.email,
-      role: 'USER' as const
+      phone: body.phone || '',
+      role: 'USER' as const,
+      password: body.password // Stocké pour la connexion (en production, jamais stocker en clair!)
     };
+    
+    // Ajouter à la liste des utilisateurs
+    mockUsers[newUserId] = currentUser;
+    
+    // Sauvegarder dans localStorage
+    saveUsersToStorage(mockUsers);
+    
+    // Initialiser la liste de dons pour ce nouvel utilisateur
+    if (!userDonations[newUserId]) {
+      userDonations[newUserId] = [];
+      saveUserDonationsToStorage(userDonations);
+    }
+    
     token = 'mock-token-' + currentUser.id;
     return { status: 200, data: { token: token } };
   }
@@ -255,8 +533,11 @@ export async function handleMock(config: AxiosRequestConfig) {
       filtered = filtered.filter(d => d.category === params.category);
     }
     
-    // Filter by commune
-    if (params.commune) {
+    // Filter by communes (single or multiple)
+    if (params.communes) {
+      const communesFilter = Array.isArray(params.communes) ? params.communes : [params.communes];
+      filtered = filtered.filter(d => communesFilter.includes(d.commune));
+    } else if (params.commune) {
       filtered = filtered.filter(d => d.commune === params.commune);
     }
     
@@ -287,12 +568,17 @@ export async function handleMock(config: AxiosRequestConfig) {
     // Ajouter à la liste globale
     sampleDonations.push(newDonation);
     
+    // Sauvegarder dans localStorage pour persistance
+    saveDonationsToStorage(sampleDonations);
+    
     // Ajouter à la liste de l'utilisateur
     if (currentUser?.id) {
       if (!userDonations[currentUser.id]) {
         userDonations[currentUser.id] = [];
       }
       userDonations[currentUser.id].push(newDonation);
+      // Sauvegarder les dons de l'utilisateur
+      saveUserDonationsToStorage(userDonations);
     }
     
     return { status: 200, data: { id: newId } };
@@ -351,11 +637,18 @@ export async function handleMock(config: AxiosRequestConfig) {
   // My donations
   if (url.includes('/me/donations') && method === 'get') {
     // Retourner seulement les annonces créées par l'utilisateur connecté
-    if (currentUser?.id && userDonations[currentUser.id]) {
-      return { status: 200, data: userDonations[currentUser.id] };
+    if (!currentUser?.id) {
+      return { status: 401, data: { message: 'Non authentifié' } };
     }
-    // Si l'utilisateur n'a pas encore créé d'annonces, retourner un tableau vide
-    return { status: 200, data: [] };
+    
+    // Initialiser la liste si elle n'existe pas
+    if (!userDonations[currentUser.id]) {
+      userDonations[currentUser.id] = [];
+      saveUserDonationsToStorage(userDonations);
+    }
+    
+    // Retourner uniquement les annonces de cet utilisateur
+    return { status: 200, data: userDonations[currentUser.id] || [] };
   }
 
   // Roles
@@ -389,12 +682,16 @@ export async function handleMock(config: AxiosRequestConfig) {
 
   // Users management
   if (url.endsWith('/users') && method === 'get') {
-    return { status: 200, data: [
-      { id: '1', firstName: 'Ahmed', lastName: 'Alaoui', email: 'admin@sadaka.ma', role: 'ADMIN', phone: '0612345678' },
-      { id: '2', firstName: 'Fatima', lastName: 'Benali', email: 'moderator@sadaka.ma', role: 'MODERATOR', phone: '0612345679' },
-      { id: '3', firstName: 'Mohamed', lastName: 'Idrissi', email: 'user@sadaka.ma', role: 'USER', phone: '0612345680' },
-      { id: '4', firstName: 'Aicha', lastName: 'Tazi', email: 'aicha@example.com', role: 'USER', phone: '0612345681' }
-    ] };
+    // Retourner tous les utilisateurs (initiaux + créés), sans le mot de passe
+    const allUsers = Object.values(mockUsers).map((u: any) => ({
+      id: u.id,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      email: u.email,
+      role: u.role,
+      phone: u.phone || ''
+    }));
+    return { status: 200, data: allUsers };
   }
   if (url.match(/\/users\/[^/]+$/) && method === 'delete') {
     return { status: 200, data: { ok: true } };

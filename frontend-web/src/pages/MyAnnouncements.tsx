@@ -1,4 +1,4 @@
-import { Card, Table, Tag, Button, Empty, Typography, Space, Modal, InputNumber, Descriptions, message, Divider } from 'antd';
+import { Card, Table, Tag, Button, Empty, Typography, Space, Modal, InputNumber, Descriptions, message, Divider, Popconfirm } from 'antd';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
@@ -17,6 +17,9 @@ type MyAnn = {
   createdAt: string;
   commune?: string;
   description?: string;
+  deviceId?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 };
 
 type InterestRequest = {
@@ -123,6 +126,17 @@ export default function MyAnnouncements() {
       }
     } catch (e: any) {
       message.error(e?.message || 'Erreur lors de la suppression');
+    }
+  };
+
+  const handleDeleteAnnouncement = async (announcement: MyAnn) => {
+    try {
+      await api.delete(`/donations/${announcement.id}`);
+      message.success('Annonce supprimée');
+      const res = await api.get('/me/donations');
+      setData(res.data as MyAnn[]);
+    } catch (e: any) {
+      message.error(e?.message || 'Suppression impossible');
     }
   };
 
@@ -240,13 +254,25 @@ export default function MyAnnouncements() {
               {
                 title: 'Actions',
                 render: (_, record: MyAnn) => (
-                  <Button 
-                    size="small" 
-                    type="primary"
-                    onClick={() => handleViewInterests(record)}
-                  >
-                    Voir demandeurs
-                  </Button>
+                  <Space>
+                    <Button 
+                      size="small" 
+                      type="primary"
+                      onClick={() => handleViewInterests(record)}
+                    >
+                      Voir demandeurs
+                    </Button>
+                    <Popconfirm
+                      title="Supprimer cette annonce ?"
+                      okText="Oui"
+                      cancelText="Non"
+                      onConfirm={() => handleDeleteAnnouncement(record)}
+                    >
+                      <Button size="small" danger>
+                        Supprimer
+                      </Button>
+                    </Popconfirm>
+                  </Space>
                 )
               }
             ]}

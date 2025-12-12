@@ -24,7 +24,7 @@ export default function MapPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState<string | undefined>();
   const [category, setCategory] = useState<string | undefined>();
-  const [commune, setCommune] = useState<string | undefined>();
+  const [communes, setCommunes] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<any>();
   const [distanceKm, setDistanceKm] = useState<number>(0);
 
@@ -35,7 +35,7 @@ export default function MapPage() {
         params: {
           q: search,
           category,
-          commune,
+          communes: communes.length ? communes : undefined,
           dateFrom: dateRange?.[0]?.toISOString?.(),
           dateTo: dateRange?.[1]?.toISOString?.(),
           distanceKm: distanceKm || undefined
@@ -47,7 +47,7 @@ export default function MapPage() {
         setAnnouncements(data.filter(a => a.latitude && a.longitude));
       })
       .finally(() => setLoading(false));
-  }, [search, category, commune, dateRange, distanceKm]);
+  }, [search, category, communes, dateRange, distanceKm]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -80,10 +80,12 @@ export default function MapPage() {
             </Col>
             <Col xs={24} sm={12} md={6}>
               <Select
+                mode="multiple"
                 allowClear
-                placeholder="Commune"
+                placeholder="Communes (sélection multiple)"
                 style={{ width: '100%' }}
-                onChange={setCommune}
+                value={communes}
+                onChange={(vals) => setCommunes(vals)}
                 options={Object.entries(getCommunesByRegion()).map(([region, communes]) => ({
                   label: region,
                   options: communes.map(commune => ({ label: commune.label, value: commune.value }))

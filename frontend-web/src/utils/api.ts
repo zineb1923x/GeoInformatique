@@ -22,8 +22,11 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     // Utiliser les mocks par défaut pour la démonstration (si backend non disponible)
+    // Les mocks sont activés par défaut (VITE_USE_MOCKS='1') pour permettre une démo sans backend
     const useMocks = String(import.meta.env.VITE_USE_MOCKS || '1') === '1';
-    const isNetwork = !error.response;
+    const isNetwork = !error.response; // Erreur réseau = backend non disponible
+    
+    // Si mocks activés OU backend non disponible → utiliser les mocks
     if (useMocks || isNetwork) {
       try {
         const mock = await handleMock(error.config || {});

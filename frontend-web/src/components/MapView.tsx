@@ -92,24 +92,51 @@ type Announcement = {
 function MapBounds({ announcements }: { announcements: Announcement[] }) {
   const map = useMap();
 
+  // Limites du Maroc complet (y compris le Sahara marocain)
+  const moroccoBounds = L.latLngBounds(
+    [23.0, -17.0], // Sud-Ouest (Dakhla - limite sud du Maroc)
+    [35.8, -1.1]   // Nord-Est (Tanger - frontière Est avec l'Algérie)
+  );
+
   useEffect(() => {
     if (announcements.length > 0) {
       const validAnnouncements = announcements.filter(a => a.latitude && a.longitude);
       if (validAnnouncements.length > 0) {
         const bounds = validAnnouncements.map(a => [a.latitude!, a.longitude!] as [number, number]);
-        if (bounds.length === 1) {
-          // Si un seul point, centrer dessus
-          map.setView([bounds[0][0], bounds[0][1]], 12);
-        } else if (bounds.length > 1) {
-          // Si plusieurs points, ajuster les bounds
-          const latlngs = bounds.map(([lat, lng]) => L.latLng(lat, lng));
+        
+        // Filtrer les points qui sont dans les limites du Maroc
+        const moroccoPoints = bounds.filter(([lat, lng]) => 
+          moroccoBounds.contains(L.latLng(lat, lng))
+        );
+        
+        if (moroccoPoints.length === 0) {
+          // Si aucun point dans les limites, vue par défaut
+          map.setView([32.5, -6.0], 6);
+          return;
+        }
+        
+        if (moroccoPoints.length === 1) {
+          // Si un seul point, centrer dessus (mais respecter les limites)
+          const [lat, lng] = moroccoPoints[0];
+          map.setView([lat, lng], 12);
+        } else if (moroccoPoints.length > 1) {
+          // Si plusieurs points, ajuster les bounds (mais respecter les limites du Maroc)
+          const latlngs = moroccoPoints.map(([lat, lng]) => L.latLng(lat, lng));
           const boundsObj = L.latLngBounds(latlngs);
-          map.fitBounds(boundsObj as any, { padding: [50, 50], maxZoom: 12 });
+          
+          // Intersecter avec les limites du Maroc pour ne pas dépasser
+          const constrainedBounds = moroccoBounds.extend(boundsObj);
+          map.fitBounds(constrainedBounds as any, { padding: [50, 50], maxZoom: 12 });
         }
       }
-    } else {
-      // Vue par défaut sur le Maroc
-      map.setView([31.7917, -7.0926], 6);
+      } else {
+      // Vue par défaut sur le Maroc complet (y compris le Sahara marocain)
+      map.setView([28.5, -8.0], 6);
+    }
+    
+    // S'assurer que la carte reste dans les limites
+    if (!moroccoBounds.contains(map.getCenter())) {
+      map.setView([28.5, -8.0], 6);
     }
   }, [announcements, map]);
 
@@ -122,7 +149,15 @@ interface MapViewProps {
 }
 
 export default function MapView({ announcements, loading = false }: MapViewProps) {
-  const center: [number, number] = [31.7917, -7.0926]; // Centre du Maroc
+  // Centre du Maroc complet (y compris le Sahara marocain)
+  const center: [number, number] = [28.5, -8.0]; // Centre géographique du Maroc complet
+  
+  // Limites du Maroc complet (y compris le Sahara marocain)
+  // Nord: Tanger (~35.8°N), Sud: Dakhla (~23.7°N), Ouest: côte atlantique (~17.0°W), Est: frontière Algérie (~1.1°W)
+  const moroccoBounds = L.latLngBounds(
+    [23.0, -17.0], // Sud-Ouest (Dakhla - limite sud du Maroc)
+    [35.8, -1.1]   // Nord-Est (Tanger - frontière Est avec l'Algérie)
+  );
 
   const validAnnouncements = announcements.filter(a => a.latitude && a.longitude);
 
@@ -146,17 +181,22 @@ export default function MapView({ announcements, loading = false }: MapViewProps
       <MapContainer 
         center={center} 
         zoom={6} 
+        minZoom={5}
+        maxZoom={18}
+        maxBounds={moroccoBounds}
+        maxBoundsViscosity={1.0}
         style={{ height: '100%', width: '100%' }}
       >
+        {/* Utiliser ESRI World Street Map qui affiche mieux le Maroc complet */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | &copy; <a href="https://www.esri.com/">ESRI</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.esri.com/">ESRI</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
         />
         
-        {/* Alternative: Utiliser ESRI comme mentionné dans les spécifications - désactivé par défaut */}
+        {/* Alternative: OpenStreetMap (peut afficher le Maroc découpé selon les données) */}
         {/* <TileLayer
-          attribution='&copy; <a href="https://www.esri.com/">ESRI</a>'
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         /> */}
         
         <MapBounds announcements={validAnnouncements} />

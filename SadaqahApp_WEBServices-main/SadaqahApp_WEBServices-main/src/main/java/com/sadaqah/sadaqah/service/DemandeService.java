@@ -22,17 +22,25 @@ public class DemandeService {
 		return demandeRepo.demandesParUser(idUser);
 	};
 	
-	
-	//demandes findAll
+    //demandes findAll
 	public List<Demande>findAll() {
 		return demandeRepo.findAll();
 	};
 		
 
-	
 	//ajouter une demande 
-		public Demande save_annonce(Long annonce, Long demandeur) {
-			 return demandeRepo.savea(annonce, demandeur);
+		public boolean save_annonce(Long annonce, Long demandeur) {
+			boolean result=true;
+			try {
+				demandeRepo.savea(annonce, demandeur);
+	        	return result; 
+	        } catch(Exception e){
+	        	
+	        	result = false;
+	        	return result;
+	        	
+	        }
+			  
 		};
 	
 	//supprimer une demande 

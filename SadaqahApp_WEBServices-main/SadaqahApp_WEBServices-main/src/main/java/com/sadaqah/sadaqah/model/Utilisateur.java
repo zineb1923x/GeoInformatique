@@ -68,31 +68,12 @@ public class Utilisateur {
 		this.photo = photo;
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	
-	
 	public Utilisateur() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Utilisateur(Long id, String nom, String prenom, Point geom, String email, Long telephone, String photo,String password) {
-		super();
-		this.id = id;
-		this.nom = nom;
-		this.prenom = prenom;
-		this.geom = geom;
-		this.email = email;
-		this.telephone = telephone;
-		this.photo = photo;
-		this.password=password;
-	}
+	
 
 	@Id
 	@GeneratedValue
@@ -111,14 +92,59 @@ public class Utilisateur {
 	@Column(name="photo")
 	private String photo;
 	
-	@Column(name="email")
+	@Column(name="email",unique=true)
 	private String email;
 	
 	@Column(name="telephone")
 	private Long telephone;
 	
-	@Column(name="password")
-	private String password;
+	@Column(name="userName",unique=true)
+	private String userName;
+	
+	@Column(name="passWord")
+	private String passWord;
+	
+	public Utilisateur(Long id, Point geom, String nom, String prenom, String photo, String email, Long telephone,
+			String userName, String passWord, String genre) {
+		super();
+		this.id = id;
+		this.geom = geom;
+		this.nom = nom;
+		this.prenom = prenom;
+		this.photo = photo;
+		this.email = email;
+		this.telephone = telephone;
+		this.userName = userName;
+		this.passWord = passWord;
+		this.genre = genre;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getPassWord() {
+		return passWord;
+	}
+
+	public void setPassWord(String passWord) {
+		this.passWord = passWord;
+	}
+
+	public String getGenre() {
+		return genre;
+	}
+
+	public void setGenre(String genre) {
+		this.genre = genre;
+	}
+
+	@Column(name="genre")
+	private String genre;
 	
 	
 

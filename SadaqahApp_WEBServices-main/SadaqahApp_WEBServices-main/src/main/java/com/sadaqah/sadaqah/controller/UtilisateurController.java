@@ -1,61 +1,46 @@
 package com.sadaqah.sadaqah.controller;
 
 import java.util.List;
-import java.util.Optional;
 
-import org.geolatte.geom.Point;
+import javax.persistence.Table;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.sadaqah.sadaqah.model.Annonce;
-import com.sadaqah.sadaqah.model.Utilisateur;
-import com.sadaqah.sadaqah.service.AnnonceService;
 import com.sadaqah.sadaqah.service.UtilisateurService;
 
-@CrossOrigin
+import com.sadaqah.sadaqah.model.Utilisateur;
+
 @RestController
+@CrossOrigin
+@RequestMapping("api/v1/")
 public class UtilisateurController {
-
+	
 	@Autowired
-	private UtilisateurService utilisateurService;
+	private UtilisateurService utilisateurSrvice;
 	
-	//upload User image
-	@PostMapping("/upload_User_image")
-	  public boolean pictureupload(@RequestParam("id") long id
-			  ,@RequestParam("file") MultipartFile file) {
-	      return utilisateurService.pictureuploadUser(id,file);
-	  }
-	
-	
-	@GetMapping("/log_in")
-	public String findById(@RequestParam("email") String email,@RequestParam ("password") String password) {
-	    return  utilisateurService.findUser(email,password);
+	@GetMapping("/utilisateurs")
+	public List<Utilisateur> getUtilisateurs(){
+		return utilisateurSrvice.getUtilisateurs();
+		
 	}
 	
+	@PostMapping("/utilisateur")
+	public boolean addUtilisateur(@RequestBody Utilisateur utilisateur) {
+		return utilisateurSrvice.addUtilisateur(utilisateur);
+	}
 	
-
-
-
-	@PostMapping ("/sign_up")
-	public Boolean sign_up(@RequestParam("nom") String nom,
-			@RequestParam("prenom") String prenom,
-			@RequestParam("email") String email,
-			@RequestParam("password") String password,
-			@RequestParam("telephone") Long telephone, 
-			@RequestParam("photo") String photo,
-			@RequestParam("Longitude") Double Longitude,
-			@RequestParam("Latitude") Double Latitude) {
-        return utilisateurService.addUser(nom,prenom,email, password, telephone,photo,Longitude,Latitude);
-	
+	@GetMapping("/utilisateur/connect")
+	public Long connect(@RequestParam("userName") String userName,@RequestParam("passWord") String passWord) {
+		return utilisateurSrvice.connect(userName, passWord);
+	}
+		
 	}
 
-
-}
 

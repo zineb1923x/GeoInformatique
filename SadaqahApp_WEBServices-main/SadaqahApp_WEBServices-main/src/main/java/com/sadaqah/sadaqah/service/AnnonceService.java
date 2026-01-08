@@ -1,185 +1,150 @@
 package com.sadaqah.sadaqah.service;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.locationtech.jts.geom.Point;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Service;
-
+import com.sadaqah.sadaqah.dto.AnnonceRequest;
+import com.sadaqah.sadaqah.dto.AnnonceResponse;
 import com.sadaqah.sadaqah.model.Annonce;
 import com.sadaqah.sadaqah.model.Category;
+import com.sadaqah.sadaqah.model.Commune;
 import com.sadaqah.sadaqah.model.Utilisateur;
+import com.sadaqah.sadaqah.repo.ICategoryRepo;
 import com.sadaqah.sadaqah.repo.IAnnonce;
+import com.sadaqah.sadaqah.repo.ICommune;
+import com.sadaqah.sadaqah.repo.IUtilisateur;
 
-
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AnnonceService {
-	@Autowired
-	private IAnnonce annonceRepo; 
-	
-	
-	
-	  public boolean pictureupload(long id,MultipartFile file) {
 
-		    //.out.println(file.getName());
-		    //System.out.println(file.getOriginalFilename());
-		    //System.out.println(file.getSize());
-		    //System.out.println(file.getOriginalFilename().split("\\.")[1]);
-		    //System.out.println(id);		    
+    @Autowired
+    private IAnnonce annonceRepository;
 
-		    
-		    try {
-		      Path downloadedFile = Paths.get("images_annonce/"+id+"."+file.getOriginalFilename().split("\\.")[1]);
-		      Files.deleteIfExists(downloadedFile);
-		      Files.copy(file.getInputStream(), downloadedFile);
-		      return true;
-		    }
-		    
-		    catch (IOException e) {
-		      LoggerFactory.getLogger(this.getClass()).error("pictureupload", e);
-		      return false;
-		    }
+    @Autowired
+    private ICategoryRepo categoryRepository;
 
-		  }
-	
-	
-	
-	
-	//toutes les annonces
-	public List<Annonce> findAnnonce() {
-        return  annonceRepo.findAnnonces();
+    @Autowired
+    private ICommune communeRepository;
+
+    @Autowired
+    private IUtilisateur utilisateurRepository;
+
+    private final GeometryFactory geometryFactory = new GeometryFactory();
+
+    // -------------------- CRUD / Business Logic -------------------- //
+
+    public List<Annonce> findAllApproved() {
+        return annonceRepository.findAnnonces(); // méthode existante
     }
-	
-	//annonce by id
-	public Optional<Annonce> findAnnonceById(Long id) {
-	      return  annonceRepo.findById(id);
-	}
-	
-	//Annonces par utilisateur
-		public List<Annonce> findAnnoncesParUser(Long id) {
-			
-	        return  annonceRepo.findMesAnnonces(id);
-	   
-	    }
-		
-	//anonce within a commune
-	public List<Annonce> findAnnonceWithinCommune(Long id) {
-        return annonceRepo.findAnnoncesWithinCommune(id);
+
+    public Optional<Annonce> findById(Long id) {
+        return annonceRepository.findById(id);
     }
-	
-	//anonce within a category
-	public List<Annonce> findAnnonceWithinCategorie(Long id) {
-	    return annonceRepo.findAnnoncesWithinCategorie(id);
-	}
-	
 
-	//ajouter une nouvelle annonce service
-	public Annonce addAnnonce(List<Double> coordinates, String titre, String desc, Long categorie, Long commune,
-			Long donnateur,String photo) {
-		
-		double userLongitude = coordinates.get(0);
-        double userLatitude = coordinates.get(1);
-        Long idMax=annonceRepo.maxID();
-        Calendar cal = Calendar.getInstance();
-        Date date=cal.getTime();
-        DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
-        String formattedDate=dateFormat.format(date);
-        
-        return annonceRepo.addAnnonce(idMax+1,titre, desc,date, categorie,commune, donnateur,userLongitude,userLatitude,photo);
-		
-		
-	}
-	
-	//modifier une annonce
-	public Annonce updateAnnonce(Long id,List<Double> coordinates, String titre, String desc, Long categorie, Long commune,
-			String photo) {
-			
-		double userLongitude = coordinates.get(0);
-	    double userLatitude = coordinates.get(1);
-	    Calendar cal = Calendar.getInstance();
-	    Date date=cal.getTime();
-	    DateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
-	    String formattedDate=dateFormat.format(date);
-	        
-	    return annonceRepo.updateAnnonce(id,titre, desc,date, categorie,commune, userLongitude,userLatitude,photo);
-	};
-	
-	//supprimer une annonce par user
-	public void deleteAnnonce(Long id) {
-	         annonceRepo.deleteAnnonce(id);
-	};
-	
-	//approuver une annonce par admin
-	public void approuverAnnonce(Long id) {
-	        annonceRepo.approuverAnnonce(id);
-	};
-	
-	//rejeter une annonce par admin
-	public void rejeterAnnonce(Long id) {
-		 annonceRepo.rejeterAnnonce(id);
-	};
-	
-	//don deja attribué (masquer du file de publication)
-	public void masquerAnnonce(Long id) {
-			annonceRepo.masquerAnnonce(id);
-	};
-	  
-		
-		
-	
-	
-	
-	
-	
-	
-	//******************///
-	//annonces les plus proches d'un utilisateur
-	//Annonces par utilisateur
-	public List<Annonce> findAnnoncesNearUser(Double userLongitude, Double userLatitude) {
-		 return  annonceRepo.findAnnoncesNearUser(userLongitude, userLatitude);
-	}
+    public AnnonceResponse createAnnonce(AnnonceRequest request) {
 
-	
-		       
- 
- }
-	
-	
-			
-	
-	
-	
-	
+        Annonce annonce = new Annonce();
 
+        // Géométrie
+        double lng = request.getCoordinates().get(0);
+        double lat = request.getCoordinates().get(1);
+        Point point = geometryFactory.createPoint(new Coordinate(lng, lat));
+        annonce.setGeom(point);
 
+        // Relations
+        Category cat = categoryRepository.findById(request.getCategorieId()).orElseThrow();
+        annonce.setCategorie(cat);
+
+        Commune commune = communeRepository.findById(request.getCommuneId()).orElseThrow();
+        annonce.setCommune(commune);
+
+        Utilisateur donnateur = utilisateurRepository.findById(request.getDonnateurId()).orElseThrow();
+        annonce.setDonnateur(donnateur);
+
+        annonce.setTitre(request.getTitre());
+        annonce.setDescription(request.getDescription());
+        annonce.setPhoto(request.getPhoto());
+
+        // Date & status
+        annonce.setDate(Calendar.getInstance().getTime());
+        annonce.setStatus("déclarée");
+
+        annonceRepository.save(annonce);
+
+        return mapToResponse(annonce);
+    }
+
+    public boolean updateAnnonce(Long id, AnnonceRequest request) {
+        Optional<Annonce> opt = annonceRepository.findById(id);
+        if (opt.isEmpty()) return false;
+
+        Annonce annonce = opt.get();
+
+        // Mise à jour coordonnées
+        double lng = request.getCoordinates().get(0);
+        double lat = request.getCoordinates().get(1);
+        Point point = geometryFactory.createPoint(new Coordinate(lng, lat));
+        annonce.setGeom(point);
+
+        // Mise à jour relations
+        Category cat = categoryRepository.findById(request.getCategorieId()).orElseThrow();
+        annonce.setCategorie(cat);
+
+        Commune commune = communeRepository.findById(request.getCommuneId()).orElseThrow();
+        annonce.setCommune(commune);
+
+        annonce.setTitre(request.getTitre());
+        annonce.setDescription(request.getDescription());
+        annonce.setPhoto(request.getPhoto());
+
+        annonceRepository.save(annonce);
+        return true;
+    }
+
+    public void deleteAnnonce(Long id) {
+        annonceRepository.deleteById(id);
+    }
+
+    public void approuverAnnonce(Long id) {
+        Optional<Annonce> opt = annonceRepository.findById(id);
+        if (opt.isPresent()) {
+            Annonce a = opt.get();
+            a.setStatus("approuvée");
+            annonceRepository.save(a);
+        }
+    }
+
+    public void rejeterAnnonce(Long id) {
+        Optional<Annonce> opt = annonceRepository.findById(id);
+        if (opt.isPresent()) {
+            Annonce a = opt.get();
+            a.setStatus("rejetée");
+            annonceRepository.save(a);
+        }
+    }
+
+    // -------------------- Mapping vers DTO -------------------- //
+    private AnnonceResponse mapToResponse(Annonce annonce) {
+        AnnonceResponse res = new AnnonceResponse();
+        res.setId(annonce.getId());
+        res.setTitre(annonce.getTitre());
+        res.setStatus(annonce.getStatus());
+        res.setPhoto(annonce.getPhoto());
+        res.setLongitude(annonce.getGeom().getX());
+        res.setLatitude(annonce.getGeom().getY());
+        res.setCategorieName(annonce.getCategorie().getName());
+        res.setCommuneName(annonce.getCommune().getNomCommune());
+        res.setDonnateurName(annonce.getDonnateur().getNom()); // Assure-toi que Utilisateur a getNom()
+        return res;
+    }
+
+}

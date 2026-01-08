@@ -31,8 +31,8 @@ public class CategoryService {
     	categoryRepo.deleteById(id);
     }
  
-    public Category saveCategory(Category config) {
-        Category savedConfig = categoryRepo.save(config);
+    public Category saveCategory(Category category) {
+        Category savedConfig = categoryRepo.save(category);
 		return savedConfig;
     }
     

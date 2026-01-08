@@ -18,15 +18,21 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.sadaqah.sadaqah.model.Annonce;
+import com.sadaqah.sadaqah.utils.Annonce_Fcategorie;
+import com.sadaqah.sadaqah.utils.Annonce_Perso;
 
 @Repository
 public interface IAnnonce extends JpaRepository<Annonce, Long>,JpaSpecificationExecutor<Annonce> {
 	
 	
 	 
-	//Trouver toutes les annonces 
-	@Query(value = "SELECT * "+" FROM Annonce a" , nativeQuery = true)
+	//Trouver toutes les annonces appouvées 
+	@Query(value = "SELECT * "+" FROM Annonce a where status= 'approuvée'" , nativeQuery = true)
 	List<Annonce> findAnnonces();
+	
+	//Trouver toutes les annonces en cours de traitement 
+		@Query(value = "SELECT * "+" FROM Annonce a where status= 'déclarée' or status='modifiée'" , nativeQuery = true)
+		List<Annonce> findAnnonces_en_cours_traitement();
 	
 	//Trouver les annonces par id_user 
 	@Query(value = "SELECT * FROM Annonce a"+ " where a.donnateur_id="+" :id_user" , nativeQuery = true)
@@ -44,8 +50,6 @@ public interface IAnnonce extends JpaRepository<Annonce, Long>,JpaSpecificationE
 	
 	
 	//ajout d'une nouvelle annonce 
-	
-	
 	@Query(value = "INSERT INTO Annonce (id,titre, donnateur_id,categorie_id, commune_id,geom)"
 			+ " VALUES (12,:titre, 1, 1, 1, ST_SetSRID(ST_Point(:userLongitude,:userLatitude),4326))", nativeQuery = true)
 	void insert(@Param("titre") String titre,@Param("userLongitude") Double userLongitude,@Param("userLatitude")  Double userLatitude);
@@ -56,7 +60,7 @@ public interface IAnnonce extends JpaRepository<Annonce, Long>,JpaSpecificationE
 	//nouvelle annonce 
 	@Query(value = "INSERT INTO Annonce (id, titre,description,date,status,categorie_id,commune_id,donnateur_id,geom,photo)"
 				+ " VALUES (:id, :titre, :desc,:date, 'déclarée',:categorie,:commune,:donnateur,  ST_SetSRID(ST_Point(:longitude,:latitude),4326),:photo)", nativeQuery = true)
-	Annonce addAnnonce( @Param("id") Long id,@Param("titre") String titre, @Param("desc")  String desc,@Param("date")  Date date,
+	boolean addAnnonce( @Param("id") Long id,@Param("titre") String titre, @Param("desc")  String desc,@Param("date")  Date date,
 			@Param("categorie") Long categorie,
 			@Param("commune")  Long commune,  @Param("donnateur") Long donnateur,  @Param("longitude") double longitude,
 				@Param("latitude") double latitude,@Param("photo") String photo);
@@ -70,7 +74,7 @@ public interface IAnnonce extends JpaRepository<Annonce, Long>,JpaSpecificationE
 		@Query(value = "UPDATE Annonce set titre=:titre,description= :desc,date=:date,status='modifiée',categorie_id=:categorie,"
 				+ "commune_id=:commune,geom=ST_SetSRID(ST_Point(:longitude,:latitude),4326),photo=:photo "
 					+ "where id=:id", nativeQuery = true)
-		Annonce updateAnnonce( @Param("id") Long id,@Param("titre") String titre, @Param("desc")  String desc,@Param("date")  Date date,
+		int updateAnnonce( @Param("id") Long id,@Param("titre") String titre, @Param("desc")  String desc,@Param("date")  Date date,
 				@Param("categorie") Long categorie,
 				@Param("commune")  Long commune,    @Param("longitude") double longitude,
 					@Param("latitude") double latitude,@Param("photo") String photo);
@@ -100,6 +104,7 @@ public interface IAnnonce extends JpaRepository<Annonce, Long>,JpaSpecificationE
 	@Query(value = "update Annonce set status = 'attribuée' "+ "where id=:id", nativeQuery = true)
 	void masquerAnnonce(@Param("id") Long id);
 	
+	
 	//les annonces les plus proches d'un point (position de l'utilisateur)//utilité si la position de annonce est random
 	@Query(value = "SELECT a.id, a.donnateur,a.categorie,a.geom,a.date,a.titre,a.desc, a.status,a.photo,a.quantite, ST_Distance(a.geom,ST_SetSRID(ST_Point(:userLongitude,:userLatitude),4326)) AS distance "
 		          + "FROM Annonce a "
@@ -107,6 +112,17 @@ public interface IAnnonce extends JpaRepository<Annonce, Long>,JpaSpecificationE
 		          + "LIMIT 1"
 		            , nativeQuery = true)
 	List<Annonce> findAnnoncesNearUser(@Param("userLongitude") Double userLongitude,@Param("userLatitude")  Double userLatitude);
+	
+	//nombre des annonces par date 
+	@Query(value = "select count(*) as count, to_char(date,'dd-mon-yy') as date_ from annonce group by date_"
+	            , nativeQuery = true)
+	List annoncesParDate();
+	
+	//nombre des annonces par famille de categorie 
+	@Query(value="select f.name as fcategorie,count(a) as nbr_annonce from annonce a, categorie c, "
+			+ "categorie_famille f where a.categorie_id = c.id and c.famille=f.id group by f.name ", nativeQuery = true)
+	
+	List annonces_par_famille();
 	
 	
 	

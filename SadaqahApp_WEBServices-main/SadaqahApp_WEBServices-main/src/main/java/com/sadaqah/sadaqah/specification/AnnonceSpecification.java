@@ -5,11 +5,11 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
+import com.sadaqah.sadaqah.model.Commune;
 import org.springframework.data.jpa.domain.Specification;
 
 import com.sadaqah.sadaqah.model.Annonce;
 import com.sadaqah.sadaqah.model.Category;
-import com.sadaqah.sadaqah.model.Commune;
 import com.sadaqah.sadaqah.model.Utilisateur;
 
 public class AnnonceSpecification {

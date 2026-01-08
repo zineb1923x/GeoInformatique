@@ -44,8 +44,8 @@ public class CategoryController {
 	
 	//Gestion des categories 
 	@PostMapping("/categorie")
-	public Category createCategory(@RequestBody Category client) {
-		return categoryService.saveCategory(client);
+	public Category createCategory(@RequestBody Category category) {
+		return categoryService.saveCategory(category);
 	}
 	
 	

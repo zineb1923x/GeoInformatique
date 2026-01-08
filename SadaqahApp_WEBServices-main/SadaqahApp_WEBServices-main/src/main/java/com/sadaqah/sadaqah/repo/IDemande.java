@@ -19,5 +19,5 @@ public interface IDemande extends JpaRepository<Demande,Long>{
 	List<Demande> demandesParUser(@Param("idUser") Long idUser);
 	
 	@Query(value="insert into demande(annonce_id, demandeur_id) values (:annonce,:demandeur)",nativeQuery=true)
-    int savea(@Param("annonce") Long annonce,
-              @Param("demandeur") Long demandeur);}
+	Demande savea(@Param("annonce") Long annonce, @Param("demandeur") Long demandeur);
+}

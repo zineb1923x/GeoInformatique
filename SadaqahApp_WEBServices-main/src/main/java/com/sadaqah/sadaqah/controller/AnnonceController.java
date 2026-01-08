@@ -33,7 +33,6 @@ public class AnnonceController {
         return ResponseEntity.ok(annonceService.createAnnonce(mapToRequest(annonce.get())));
     }
 
-
     @PostMapping("/annonces")
     public ResponseEntity<AnnonceResponse> createAnnonce(@RequestBody AnnonceRequest request) {
         AnnonceResponse response = annonceService.createAnnonce(request);
@@ -65,6 +64,7 @@ public class AnnonceController {
         annonceService.rejeterAnnonce(id);
         return ResponseEntity.ok().build();
     }
+
 
     // -------------------- Mapping utilitaire -------------------- //
     private AnnonceRequest mapToRequest(Annonce annonce) {
